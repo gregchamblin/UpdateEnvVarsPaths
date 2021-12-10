@@ -5,38 +5,29 @@ $CurrentWindowsPrincipal = New-Object System.Security.Principal.WindowsPrincipal
 #Return True if specific user is Admin else return False
 if ($CurrentWindowsPrincipal.IsInRole([System.Security.Principal.WindowsBuiltInRole]::Administrator)) 
     {
-        $pyver = Read-Host -Promt "Change to Python version (no Decimal)"
+        $pyver = 0
+        do {
+            $inputValid = [int]::TryParse((Read-Host 'Change to Python version (no Decimal)'), [ref]$pyver)
+            if (-not $inputValid) {
+                Write-Host "Your input was not an integer. Change to Python version (no Decimal)"
+            }
+        } while (-not $inputValid)
+        
+        # $pyver = Read-Host -Promt "Change to Python version (no Decimal)"
         $NewPy = "python" + $pyver
 
         #Get Current Path
         $Environment = [System.Environment]::GetEnvironmentVariable("Path","Machine")
 
-        if ("C:\Program Files\python38" -in $Environment.Split(";"))
-            {
-                $Environment = $Environment -replace "python38", $NewPy
-            }
-        elseif ("C:\Program Files\python39" -in $Environment.Split(";"))
-            {
-                $Environment = $Environment -replace "python39", $NewPy
-            }
-        elseif ("C:\Program Files\python310" -in $Environment.Split(";"))
-            {
-                $Environment = $Environment -replace "python310", $NewPy
-            }
-
-        $Environment = $Environment -replace ";;", ";"
-        $Environment = $Environment -replace ";;", ";"
-
-        #Add Items to Environment
-        # $AddPathItems = ";" + $NewPyPath + ";" + $NewPyScriptsPath
-        # $Environment = $Environment.Insert($Environment.Length,$AddPathItems)
+        #Update Python Path
+        $Environment = $Environment -replace "python\d{2,3}", $NewPy
 
         #Set Updated Path
         [System.Environment]::SetEnvironmentVariable("Path", $Environment, "Machine")
 
-        [System.Environment]::GetEnvironmentVariable("Path","Machine").split(";")
-
         wt -w 0 nt
+
+        [Environment]::Exit(0)
     }
 else 
     {
